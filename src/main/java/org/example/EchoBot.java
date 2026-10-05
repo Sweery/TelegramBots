@@ -45,20 +45,30 @@ public class EchoBot extends TelegramLongPollingBot {
             long chatId = update.getMessage().getChatId();
             SendMessage answer = new SendMessage();
             answer.setChatId(String.valueOf(chatId));
-
-            if ("/start".equals(message)) {
-                answer.setText(MessageIsStart);
-            } else if ("/help".equals(message)) {
-                answer.setText(MessageIsHelp);
-            } else {
-                answer.setText("You wrote: " + message);
-            }
+            answer.setText(buildResponse(message));
 
             try {
                 execute(answer);
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    /**
+     * Формирует текст ответа на основе входящего сообщения.
+     * Вынесено в отдельный метод для тестируемости.
+     * @param message входящий текст
+     * @return текст ответа
+     */
+
+    String buildResponse(String message) {
+        if ("/start".equals(message)) {
+            return MessageIsStart;
+        } else if ("/help".equals(message)) {
+            return MessageIsHelp;
+        } else {
+            return "You wrote: " + message;
         }
     }
 }
