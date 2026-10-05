@@ -5,6 +5,10 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+/**
+ * Эхо-бот: повторяет сообщения и обрыбатывает команды /start и /help
+ */
+
 public class EchoBot extends TelegramLongPollingBot {
     @Override
     public String getBotUsername() {
@@ -28,6 +32,11 @@ public class EchoBot extends TelegramLongPollingBot {
             /help - show this message; \n
             I can also repeat any message you send.
             """;
+
+    /**
+     * Обрабатывает входящие сообщения
+     * @param update объект обновления от Telegram
+     */
 
     @Override
     public void onUpdateReceived(Update update) {
