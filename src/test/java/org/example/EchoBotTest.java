@@ -15,8 +15,11 @@ class EchoBotTest {
     @Test
     void startCommand_returnsStartMessage() {
         String response = bot.buildResponse("/start");
-        Assertions.assertTrue(response.contains("Echo-Bot"));
-        Assertions.assertTrue(response.contains("/help"));
+        Assertions.assertEquals("""
+            Hello. I am an Echo-Bot. \n
+            I repeat everything you write. \n
+            Type /help to see the available commands.
+            """,response);
     }
 
     /**
@@ -25,9 +28,12 @@ class EchoBotTest {
     @Test
     void helpCommand_returnsHelpMessage() {
         String response = bot.buildResponse("/help");
-        Assertions.assertTrue(response.contains("Available commands"));
-        Assertions.assertTrue(response.contains("/start"));
-        Assertions.assertTrue(response.contains("/help"));
+        Assertions.assertEquals("""
+            Available commands: \n
+            /start - start using the bot; \n
+            /help - show this message; \n
+            I can also repeat any message you send.
+            """ ,response);
     }
 
     /**
