@@ -20,18 +20,8 @@ public class EchoBot extends TelegramLongPollingBot {
         return System.getenv("BOT_TOKEN");
     }
 
-    private static final String MessageIsStart = """
-            Hello. I am an Echo-Bot. \n
-            I repeat everything you write. \n
-            Type /help to see the available commands.
-            """;
+    private static final BotLogic bot = new BotLogic();
 
-    private static final String MessageIsHelp = """
-            Available commands: \n
-            /start - start using the bot; \n
-            /help - show this message; \n
-            I can also repeat any message you send.
-            """;
 
     /**
      * Обрабатывает входящие сообщения
@@ -43,32 +33,14 @@ public class EchoBot extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String message = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
-            SendMessage answer = new SendMessage();
-            answer.setChatId(String.valueOf(chatId));
-            answer.setText(buildResponse(message));
+            SendMessage answer = bot.handleMessage(chatId, message);
 
             try {
                 execute(answer);
             } catch (TelegramApiException e) {
+                System.err.println("Сообщение не отправлено");
                 e.printStackTrace();
             }
-        }
-    }
-
-    /**
-     * Формирует текст ответа на основе входящего сообщения.
-     * Вынесено в отдельный метод для тестируемости.
-     * @param message входящий текст
-     * @return текст ответа
-     */
-
-    String buildResponse(String message) {
-        if ("/start".equals(message)) {
-            return MessageIsStart;
-        } else if ("/help".equals(message)) {
-            return MessageIsHelp;
-        } else {
-            return "You wrote: " + message;
         }
     }
 }

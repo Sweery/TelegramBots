@@ -21,6 +21,7 @@ public class Main {
             botsApi.registerBot(new EchoBot());
             System.out.println("Бот успешно запущен!");
         } catch (TelegramApiException e) {
+            System.err.println("Телеграм бот не запущен!");
             e.printStackTrace();
         }
     }
