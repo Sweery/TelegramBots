@@ -1,37 +1,29 @@
 package org.example;
 
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-
 public class BotLogic {
-    private static final String MessageIsStart = """
+    private static final String MESSAGE_IS_START = """
             Hello. I am an Echo-Bot. \n
             I repeat everything you write. \n
             Type /help to see the available commands.
             """;
 
-    private static final String MessageIsHelp = """
+    private static final String MESSAGE_IS_HELP = """
             Available commands: \n
             /start - start using the bot; \n
             /help - show this message; \n
             I can also repeat any message you send.
             """;
 
-    public SendMessage handleMessage(long chatId, String text) {
-        SendMessage answer = new SendMessage();
-        answer.setChatId(String.valueOf(chatId));
+    public String handleMessage(String text) {
         if (text == null || text.isBlank()) {
-            answer.setText("You sent an empty message");
-            return answer;
+            return "You sent an empty message";
         }
         if ("/start".equals(text)) {
-            answer.setText(MessageIsStart);
-            return answer;
+            return MESSAGE_IS_START;
         } else if ("/help".equals(text)) {
-            answer.setText(MessageIsHelp);
-            return answer;
+            return MESSAGE_IS_HELP;
         } else {
-            answer.setText("You wrote: " + text);
-            return answer;
+            return "You wrote: " + text;
         }
     }
 }

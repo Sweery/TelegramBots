@@ -22,7 +22,6 @@ public class EchoBot extends TelegramLongPollingBot {
 
     private static final BotLogic bot = new BotLogic();
 
-
     /**
      * Обрабатывает входящие сообщения
      * @param update объект обновления от Telegram
@@ -33,10 +32,13 @@ public class EchoBot extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String message = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
-            SendMessage answer = bot.handleMessage(chatId, message);
+            String answer = bot.handleMessage(message);
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(String.valueOf(chatId));
+            sendMessage.setText(answer);
 
             try {
-                execute(answer);
+                execute(sendMessage);
             } catch (TelegramApiException e) {
                 System.err.println("Сообщение не отправлено");
                 e.printStackTrace();
