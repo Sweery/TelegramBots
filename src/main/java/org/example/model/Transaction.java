@@ -1,5 +1,9 @@
 package org.example.model;
 
+
+/**
+ * Класс, представляющий финансовую запись. Содержит информацию о типе операции, сумме и названию.
+ */
 public class Transaction {
     private final TransactionType type;
     private double sum;
