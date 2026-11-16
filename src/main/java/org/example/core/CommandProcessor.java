@@ -1,9 +1,9 @@
-package org.example;
+package org.example.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BotLogic {
+public class CommandProcessor {
     private static final String MESSAGE_IS_START = """
             Hello. I am an Echo-Bot. \n
             I repeat everything you write. \n
@@ -17,7 +17,7 @@ public class BotLogic {
             I can also repeat any message you send.
             """;
 
-    private static final Logger log = LoggerFactory.getLogger(BotLogic.class);
+    private static final Logger log = LoggerFactory.getLogger(CommandProcessor.class);
 
     public String handleMessage(long chatId, String text) {
         log.debug("Обработка сообщение: chatId={}, text={}", chatId, text);
