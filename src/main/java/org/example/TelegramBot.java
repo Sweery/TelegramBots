@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.core.CommandProcessor;
+import org.example.service.FinanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -24,7 +26,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         return System.getenv("BOT_TOKEN");
     }
 
-    private static final BotLogic bot = new BotLogic();
+    private static final FinanceService financeService = new FinanceService();
+    private static final CommandProcessor bot = new CommandProcessor(financeService);
 
     /**
      * Обрабатывает входящие сообщения
@@ -40,7 +43,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             log.info("Входящее сообщение от chatId={}, user={}: {}", chatId, userName, message);
 
-            String answer = bot.handleMessage(chatId, message);
+            String answer = bot.process(chatId, message);
 
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(String.valueOf(chatId));
