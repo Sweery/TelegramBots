@@ -7,6 +7,10 @@ import org.example.service.FinanceService;
 import java.util.Arrays;
 import java.util.List;
 
+
+/**
+ * Класс, содержащий основную логику обработки команд Telegram-бота.
+ */
 public class CommandProcessor {
     private final FinanceService financeService;
 
@@ -14,6 +18,15 @@ public class CommandProcessor {
         this.financeService = financeService;
     }
 
+    /**
+     * Главный метод обработки входящего сообщения.
+     * Разбивает входящий текст на команду и аргументы, определяет тип команды
+     * и вызывает соответствующий вспомогательный метод.
+     *
+     * @param userId идентификатор пользователя в Telegram
+     * @param text   полный текст сообщения от пользователя
+     * @return строка с ответом для пользователя
+     */
     public String process(long userId, String text) {
         String[] parts = text.trim().split("\\s+");
         String command = parts[0];
@@ -66,6 +79,14 @@ public class CommandProcessor {
         }
     }
 
+    /**
+     * Обрабатывает добавление новой транзакции
+     * @param userId идентификатор пользователя
+     * @param parts массив слов из сообщения пользователя
+     * @param type тип транзакции (расход или доход)
+     * @param s сообщение, которое будет возвращено при успешном добавлении
+     * @return сообщение об успехе или текст ошибки
+     */
     private String addTransaction(long userId, String[] parts, TransactionType type, String s) {
         if (parts.length <= 3)
             return "Формат: /" + (type == TransactionType.EXPENSE ? "/add_expense" : "/add_income") +
@@ -83,6 +104,13 @@ public class CommandProcessor {
         return s;
     }
 
+    /**
+     * Формирует нумерованный список транзакций заданного типа для вывода пользователю.
+     * @param userId идентификатор пользователя
+     * @param type   тип запрашиваемых транзакций (расход или доход)
+     * @param title  заголовок списка
+     * @return отформатированная строка со списком
+     */
     private String listTransactions(long userId, TransactionType type, String title) {
         List<Transaction> list = financeService.getTransactions(userId, type);
         if (list.isEmpty())
@@ -94,6 +122,13 @@ public class CommandProcessor {
         return str.toString();
     }
 
+    /**
+     * Удаляет транзакцию по её уникальному идентификатору.
+     * @param userId идентификатор пользователя
+     * @param parts  массив слов из сообщения пользователя
+     * @param type   тип транзакции (расход или доход)
+     * @return сообщение об успешном удалении или текст ошибки
+     */
     private String deleteTransaction(long userId, String[] parts, TransactionType type) {
         if (parts.length < 2)
             return "Формат: /" + (type == TransactionType.EXPENSE ? "/delete_expense" : "/delete_income") +
@@ -110,6 +145,13 @@ public class CommandProcessor {
         return "Запись успешно удалена.";
     }
 
+    /**
+     * Редактирует существующую транзакцию по её идентификатору.
+     * @param userId идентификатор пользователя
+     * @param parts  массив слов из сообщения пользователя
+     * @param type   тип транзакции (расход или доход)
+     * @return сообщение об успешном изменении или текст ошибки
+     */
     private String editTransaction(long userId, String[] parts, TransactionType type) {
         if (parts.length < 4)
             return "Формат: /" + (type == TransactionType.EXPENSE ? "/edit_expense" : "/edit_income") +
@@ -131,6 +173,13 @@ public class CommandProcessor {
         return "Запись успешно отредактирована!";
     }
 
+    /**
+     * Вычисляет и форматирует статистику по транзакциям.
+     * @param userId идентификатор пользователя
+     * @param type   тип транзакций (расход или доход)
+     * @param title  заголовок для вывода
+     * @return отформатированная строка со статистикой
+     */
     private String getSum(long userId, TransactionType type, String title) {
         List<Transaction> list = financeService.getTransactions(userId, type);
         double sum = financeService.getSum(userId, type);

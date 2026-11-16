@@ -47,6 +47,11 @@ public class Transaction {
         this.name = name;
     }
 
+    /**
+     * Возвращает строковое представление транзакции для отладки.
+     *
+     * @return отформатированная строка с полями транзакции
+     */
     @Override
     public String toString() {
         return "Transaction{" +
