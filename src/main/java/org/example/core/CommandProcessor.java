@@ -88,16 +88,16 @@ public class CommandProcessor {
      * @return сообщение об успехе или текст ошибки
      */
     private String addTransaction(long userId, String[] parts, TransactionType type, String s) {
-        if (parts.length <= 3)
+        if (parts.length < 3)
             return "Формат: /" + (type == TransactionType.EXPENSE ? "/add_expense" : "/add_income") +
                     " <сумма> <название> ";
         double amount;
         try {
             amount = Double.parseDouble(parts[1]);
             if (amount <= 0)
-                return "Ошибка. Сумма не может быть меньше либо равна нулю.";
+                return "Ошибка. Сумма должна быть больше нуля.";
         } catch (Exception e) {
-            return "Сумма должна быть числом.";
+            return "Ошибка. Сумма должна быть числом.";
         }
         String name = String.join(" ", Arrays.copyOfRange(parts, 2, parts.length));
         financeService.addTransaction(userId, type, amount, name);
