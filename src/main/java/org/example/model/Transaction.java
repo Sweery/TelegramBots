@@ -5,6 +5,7 @@ package org.example.model;
  * Класс, представляющий финансовую запись. Содержит информацию о типе операции, сумме и названию.
  */
 public class Transaction {
+    private long userId;
     private final TransactionType type;
     private double sum;
     private String name;
@@ -13,6 +14,17 @@ public class Transaction {
         this.type = type;
         this.sum = sum;
         this.name = name;
+    }
+
+    public Transaction(long userId, TransactionType type, double sum, String name) {
+        this.userId = userId;
+        this.type = type;
+        this.sum = sum;
+        this.name = name;
+    }
+
+    public long getId() {
+        return userId;
     }
 
     public TransactionType getType() {
