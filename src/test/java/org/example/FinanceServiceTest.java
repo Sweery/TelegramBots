@@ -1,5 +1,6 @@
 package org.example;
 
+import java.io.File;
 import org.example.service.FinanceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,10 +16,14 @@ class FinanceServiceTest {
 
     @BeforeEach
     void setUp() throws SQLException {
-        // 1. Переключаем БД на оперативную память (создается заново для каждого теста)
-        FinanceService.setDbUrl("jdbc:sqlite::memory:");
+        // Удаляем старый файл тестовой БД, чтобы каждый тест начинался с чистой таблицы
+        File dbFile = new File("test_finance.db");
+        if (dbFile.exists()) {
+            dbFile.delete();
+        }
 
-        // 2. Инициализируем таблицу
+        // Подключаемся к тестовому файлу
+        FinanceService.setDbUrl("jdbc:sqlite:test_finance.db");
         FinanceService.initialize();
     }
 
