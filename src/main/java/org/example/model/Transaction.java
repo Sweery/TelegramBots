@@ -23,26 +23,51 @@ public class Transaction {
         this.name = name;
     }
 
+    /**
+     * Возврат Id
+     *
+     * @return идентификатор
+     */
     public long getId() {
         return userId;
     }
 
+    /**
+     * Возврат типа
+     * @return тип
+     */
     public TransactionType getType() {
         return type;
     }
 
+    /**
+     * Возврат суммы
+     * @return сумма
+     */
     public double getSum() {
         return sum;
     }
 
+    /**
+     * Возврат названия
+     * @return название
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Изменяет значение параметра суммы
+     * @param sum сумма
+     */
     public void setSum(double sum) {
         this.sum = sum;
     }
 
+    /**
+     * Изменяет значение параметра названия
+     * @param name название
+     */
     public void setName(String name) {
         this.name = name;
     }
