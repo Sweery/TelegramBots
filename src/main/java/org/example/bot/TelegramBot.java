@@ -1,9 +1,11 @@
-package org.example;
+package org.example.bot;
 
 import org.example.core.CommandProcessor;
 import org.example.service.FinanceService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -16,6 +18,13 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 public class TelegramBot extends TelegramLongPollingBot {
     private static final Logger log = LoggerFactory.getLogger(TelegramBot.class);
 
+    private final CommandProcessor commandProcessor;
+
+    public TelegramBot() {
+        FinanceService financeService = new FinanceService();
+        this.commandProcessor = new CommandProcessor(financeService);
+    }
+
     @Override
     public String getBotUsername() {
         return System.getenv("BOT_USERNAME");
@@ -25,9 +34,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     public String getBotToken() {
         return System.getenv("BOT_TOKEN");
     }
-
-    private static final FinanceService financeService = new FinanceService();
-    private static final CommandProcessor bot = new CommandProcessor(financeService);
 
     /**
      * Обрабатывает входящие сообщения
@@ -43,7 +49,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             log.info("Входящее сообщение от chatId={}, user={}: {}", chatId, userName, message);
 
-            String answer = bot.process(chatId, message);
+            String answer = commandProcessor.process(chatId, message);
 
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(String.valueOf(chatId));
