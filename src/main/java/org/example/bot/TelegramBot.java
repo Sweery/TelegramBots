@@ -2,26 +2,29 @@ package org.example.bot;
 
 import org.example.core.CommandProcessor;
 import org.example.service.FinanceService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 /**
- * Эхо-бот: повторяет сообщения и обрыбатывает команды /start и /help
+ * Класс Telegram-бота, отвечающий за взаимодействие с API Telegram.
  */
 
 public class TelegramBot extends TelegramLongPollingBot {
-    private static final Logger log = LoggerFactory.getLogger(TelegramBot.class);
+    private final Logger log = LoggerFactory.getLogger(TelegramBot.class);
 
     private final CommandProcessor commandProcessor;
 
-    public TelegramBot(){
-        FinanceService financeService = new FinanceService("jdbc:sqlite:finance_bot.db");
-        this.commandProcessor = new CommandProcessor((financeService));
+    public TelegramBot() {
+        FinanceService financeService = new FinanceService();
+        this.commandProcessor = new CommandProcessor(financeService);
     }
+
     @Override
     public String getBotUsername() {
         return System.getenv("BOT_USERNAME");
@@ -32,12 +35,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         return System.getenv("BOT_TOKEN");
     }
 
-
     /**
-     * Обрабатывает входящие сообщения
-     * @param update объект обновления от Telegram
+     * Обрабатывает входящие сообщения от пользователей.
+     * @param update объект обновления, содержащий информацию о входящем сообщении
      */
-
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
