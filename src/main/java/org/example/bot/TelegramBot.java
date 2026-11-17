@@ -1,5 +1,6 @@
-package org.example;
+package org.example.bot;
 
+import org.example.service.FinanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -24,7 +25,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         return System.getenv("BOT_TOKEN");
     }
 
-    private static final BotLogic bot = new BotLogic();
+    private static final FinanceService bot = new FinanceService();
 
     /**
      * Обрабатывает входящие сообщения
