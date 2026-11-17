@@ -12,9 +12,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 /**
- * Эхо-бот: повторяет сообщения и обрыбатывает команды /start и /help
+ * Класс Telegram-бота, отвечающий за взаимодействие с API Telegram.
  */
-
 public class TelegramBot extends TelegramLongPollingBot {
     private static final Logger log = LoggerFactory.getLogger(TelegramBot.class);
 
@@ -36,10 +35,9 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     * Обрабатывает входящие сообщения
-     * @param update объект обновления от Telegram
+     * Обрабатывает входящие сообщения от пользователей.
+     * @param update объект обновления, содержащий информацию о входящем сообщении
      */
-
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
