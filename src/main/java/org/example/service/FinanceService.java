@@ -1,17 +1,19 @@
-package org.example.service;
+package org.example.service; // Убедись, что пакет совпадает с твоей папкой
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class FinanceService  {
-    private static String DB_URL = "jdbc:sqlite:finance_bot.db";
+public class FinanceService {
 
-    public static void setDbUrl(String testUrl) {
-        DB_URL = testUrl;
+    private final String dbUrl;
+
+    public FinanceService(String dbUrl) {
+        this.dbUrl = dbUrl;
     }
 
-    public static void initialize() {
+    public void initialize() {
         String sql = """
             CREATE TABLE IF NOT EXISTS transactions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,7 +23,7 @@ public class FinanceService  {
                 name TEXT NOT NULL
             );
         """;
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(dbUrl);
              Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
         } catch (SQLException e) {
@@ -30,16 +32,16 @@ public class FinanceService  {
     }
 
     /**
-     * /add_expense
-     * @param userId
-     * @param amount
-     * @param name
+     * Функция добавления траты в бд
+     * @param userId телеграм id пользователя
+     * @param amount размер траты
+     * @param name наименование траты
      * @throws SQLException
      */
 
-    public static void addExpense(long userId, double amount, String name) throws SQLException {
+    public void addExpense(long userId, double amount, String name) throws SQLException {
         String sql = "INSERT INTO transactions(user_id, type, amount, name) VALUES(?, 'expense', ?, ?)";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, userId);
             pstmt.setDouble(2, amount);
@@ -49,16 +51,16 @@ public class FinanceService  {
     }
 
     /**
-     * /add_income
-     * @param userId
-     * @param amount
-     * @param name
+     * Функция добавления дохода в бд
+     * @param userId телеграм id пользователя
+     * @param amount размер дохода
+     * @param name наименование дохода
      * @throws SQLException
      */
 
-    public static void addIncome(long userId, double amount, String name) throws SQLException {
+    public void addIncome(long userId, double amount, String name) throws SQLException {
         String sql = "INSERT INTO transactions(user_id, type, amount, name) VALUES(?, 'income', ?, ?)";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, userId);
             pstmt.setDouble(2, amount);
@@ -68,16 +70,15 @@ public class FinanceService  {
     }
 
     /**
-     * /list_expenses
-     * @param userId
+     * Функция вывода списка трат
+     * @param userId телеграм id пользователя
      * @return
      * @throws SQLException
      */
-
-    public static List<String> getExpenses(long userId) throws SQLException {
+    public List<String> getExpenses(long userId) throws SQLException {
         String sql = "SELECT amount, name FROM transactions WHERE user_id = ? AND type = 'expense' ORDER BY id ASC";
         List<String> list = new ArrayList<>();
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, userId);
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -90,16 +91,16 @@ public class FinanceService  {
     }
 
     /**
-     * /list_incomes
-     * @param userId
+     * Функция вывода списка доходов
+     * @param userId телеграм id пользователя
      * @return
      * @throws SQLException
      */
 
-    public static List<String> getIncomes(long userId) throws SQLException {
+    public List<String> getIncomes(long userId) throws SQLException {
         String sql = "SELECT amount, name FROM transactions WHERE user_id = ? AND type = 'income' ORDER BY id ASC";
         List<String> list = new ArrayList<>();
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, userId);
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -112,16 +113,16 @@ public class FinanceService  {
     }
 
     /**
-     * /delete_expense
-     * @param userId
-     * @param index
+     * Функция удаления траты по номеру
+     * @param userId телеграм id пользователя
+     * @param index номер траты которую нужно удалить
      * @return
      * @throws SQLException
      */
 
-    public static boolean deleteExpense(long userId, int index) throws SQLException {
+    public boolean deleteExpense(long userId, int index) throws SQLException {
         String sql = "DELETE FROM transactions WHERE id = (SELECT id FROM transactions WHERE user_id = ? AND type = 'expense' ORDER BY id ASC LIMIT 1 OFFSET ?)";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, userId);
             pstmt.setInt(2, index - 1);
@@ -130,16 +131,16 @@ public class FinanceService  {
     }
 
     /**
-     * /delete_income
-     * @param userId
-     * @param index
+     * Функция удаления дохода по номеру
+     * @param userId телеграм id пользователя
+     * @param index номер дохода который нужно удалить
      * @return
      * @throws SQLException
      */
 
-    public static boolean deleteIncome(long userId, int index) throws SQLException {
+    public boolean deleteIncome(long userId, int index) throws SQLException {
         String sql = "DELETE FROM transactions WHERE id = (SELECT id FROM transactions WHERE user_id = ? AND type = 'income' ORDER BY id ASC LIMIT 1 OFFSET ?)";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, userId);
             pstmt.setInt(2, index - 1);
@@ -148,18 +149,17 @@ public class FinanceService  {
     }
 
     /**
-     * /edit_expense
-     * @param userId
-     * @param index
-     * @param newAmount
-     * @param newName
+     * Функция изменения траты
+     * @param userId телеграм id пользователя
+     * @param index номер изменяемой траты
+     * @param newAmount новая сумма траты
+     * @param newName новое наименование траты
      * @return
      * @throws SQLException
      */
-
-    public static boolean editExpense(long userId, int index, double newAmount, String newName) throws SQLException {
+    public boolean editExpense(long userId, int index, double newAmount, String newName) throws SQLException {
         String sql = "UPDATE transactions SET amount = ?, name = ? WHERE id = (SELECT id FROM transactions WHERE user_id = ? AND type = 'expense' ORDER BY id ASC LIMIT 1 OFFSET ?)";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setDouble(1, newAmount);
             pstmt.setString(2, newName);
@@ -170,18 +170,17 @@ public class FinanceService  {
     }
 
     /**
-     * /edit_income
-     * @param userId
-     * @param index
-     * @param newAmount
-     * @param newName
+     * Функция изменения дохода
+     * @param userId телеграм id пользователя
+     * @param index номер изменяемого дохода
+     * @param newAmount новая сумма дохода
+     * @param newName новое наименование дохода
      * @return
      * @throws SQLException
      */
-
-    public static boolean editIncome(long userId, int index, double newAmount, String newName) throws SQLException {
+    public boolean editIncome(long userId, int index, double newAmount, String newName) throws SQLException {
         String sql = "UPDATE transactions SET amount = ?, name = ? WHERE id = (SELECT id FROM transactions WHERE user_id = ? AND type = 'income' ORDER BY id ASC LIMIT 1 OFFSET ?)";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setDouble(1, newAmount);
             pstmt.setString(2, newName);
@@ -192,15 +191,14 @@ public class FinanceService  {
     }
 
     /**
-     * /sum_expenses
-     * @param userId
+     * Функция вывода суммы всех трат пользователя
+     * @param userId телеграм id пользователя
      * @return
      * @throws SQLException
      */
-
-    public static double getSumExpenses(long userId) throws SQLException {
+    public double getSumExpenses(long userId) throws SQLException {
         String sql = "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'expense'";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, userId);
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -210,16 +208,14 @@ public class FinanceService  {
     }
 
     /**
-     * /sum_incomes
-     * @param userId
+     * Функция вывода суммы всех доходов пользователя
+     * @param userId телеграм id пользователя
      * @return
      * @throws SQLException
      */
-
-
-    public static double getSumIncomes(long userId) throws SQLException {
+    public double getSumIncomes(long userId) throws SQLException {
         String sql = "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'income'";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, userId);
             try (ResultSet rs = pstmt.executeQuery()) {

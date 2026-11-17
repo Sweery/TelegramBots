@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 /**
  * Класс Telegram-бота, отвечающий за взаимодействие с API Telegram.
  */
+
 public class TelegramBot extends TelegramLongPollingBot {
     private final Logger log = LoggerFactory.getLogger(TelegramBot.class);
 
