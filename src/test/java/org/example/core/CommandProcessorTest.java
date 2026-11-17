@@ -34,7 +34,6 @@ public class CommandProcessorTest {
      */
     @Test
     void testAddExpenseBadSum() {
-        // Ввели буквы вместо цифр
         String result = processor.process(1L, "/add_expense кофе 300");
         Assertions.assertEquals("Ошибка. Сумма должна быть числом.", result);
     }
@@ -44,7 +43,6 @@ public class CommandProcessorTest {
      */
     @Test
     void testAddExpenseMinusSum() {
-        // Ввели отрицательную сумму
         String result = processor.process(1L, "/add_expense -50 штраф");
         Assertions.assertEquals("Ошибка. Сумма должна быть больше нуля.", result);
     }
@@ -63,7 +61,6 @@ public class CommandProcessorTest {
      */
     @Test
     void testDeleteBadId() {
-        // Сервис вернет false, так как он пустой
         String result = processor.process(1L, "/delete_expense 999");
         Assertions.assertEquals("Ошибка. Записи с таким ID не существует.", result);
     }
