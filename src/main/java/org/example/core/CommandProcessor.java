@@ -43,8 +43,11 @@ public class CommandProcessor {
                             "/list_expenses - список трат \n" +
                             "/list_incomes - список доходов \n" +
                             "/sum_expenses - сумма трат \n" +
+                            "/sum_incomes - сумма доходов \n" +
                             "/delete_expense <ID> - удалить трату \n" +
-                            "/edit_expense <ID> <сумма> <название> - изменить трату";
+                            "/delete_income <ID> - удалить доход \n" +
+                            "/edit_expense <ID> <новая сумма> <новое название> - изменить трату \n" +
+                            "/edit_income <ID> <новая сумма> <новое название> - изменить доход \n";
                 case "/add_expense":
                     return addTransaction(userId, parts, TransactionType.EXPENSE,
                             "Трата успешно добавлена!");
