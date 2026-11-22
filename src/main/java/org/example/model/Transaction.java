@@ -25,7 +25,6 @@ public class Transaction {
 
     /**
      * Возврат Id
-     *
      * @return идентификатор
      */
     public long getId() {
