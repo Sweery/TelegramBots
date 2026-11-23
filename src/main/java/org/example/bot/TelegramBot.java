@@ -21,7 +21,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final CommandProcessor commandProcessor;
 
     public TelegramBot() {
-        FinanceService financeService = new FinanceService();
+        FinanceService financeService = new FinanceService("jdbc:sqlite:finance_bot.db");
+        financeService.initialize();
         this.commandProcessor = new CommandProcessor(financeService);
     }
 

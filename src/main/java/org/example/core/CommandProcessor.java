@@ -4,6 +4,7 @@ import org.example.model.Transaction;
 import org.example.model.TransactionType;
 import org.example.service.FinanceService;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,7 +23,6 @@ public class CommandProcessor {
      * Главный метод обработки входящего сообщения.
      * Разбивает входящий текст на команду и аргументы, определяет тип команды
      * и вызывает соответствующий вспомогательный метод.
-     *
      * @param userId идентификатор пользователя в Telegram
      * @param text   полный текст сообщения от пользователя
      * @return строка с ответом для пользователя
@@ -43,8 +43,11 @@ public class CommandProcessor {
                             "/list_expenses - список трат \n" +
                             "/list_incomes - список доходов \n" +
                             "/sum_expenses - сумма трат \n" +
+                            "/sum_incomes - сумма доходов \n" +
                             "/delete_expense <ID> - удалить трату \n" +
-                            "/edit_expense <ID> <сумма> <название> - изменить трату";
+                            "/delete_income <ID> - удалить доход \n" +
+                            "/edit_expense <ID> <новая сумма> <новое название> - изменить трату \n" +
+                            "/edit_income <ID> <новая сумма> <новое название> - изменить доход \n";
                 case "/add_expense":
                     return addTransaction(userId, parts, TransactionType.EXPENSE,
                             "Трата успешно добавлена!");
@@ -75,7 +78,7 @@ public class CommandProcessor {
                     return "Неизвестная команда. Введите /help для справки.";
             }
         } catch (Exception e) {
-            return "Ошибка выполнения команды. Проверьте введенные данные.";
+            return "Ошибка выполнения команды. Проверьте введенные данные." + e.getMessage();
         }
     }
 
@@ -87,7 +90,7 @@ public class CommandProcessor {
      * @param s сообщение, которое будет возвращено при успешном добавлении
      * @return сообщение об успехе или текст ошибки
      */
-    private String addTransaction(long userId, String[] parts, TransactionType type, String s) {
+    private String addTransaction(long userId, String[] parts, TransactionType type, String s) throws SQLException {
         if (parts.length < 3)
             return "Формат: /" + (type == TransactionType.EXPENSE ? "/add_expense" : "/add_income") +
                     " <сумма> <название> ";
@@ -96,11 +99,12 @@ public class CommandProcessor {
             amount = Double.parseDouble(parts[1]);
             if (amount <= 0)
                 return "Ошибка. Сумма должна быть больше нуля.";
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             return "Ошибка. Сумма должна быть числом.";
         }
         String name = String.join(" ", Arrays.copyOfRange(parts, 2, parts.length));
-        financeService.addTransaction(userId, type, amount, name);
+        Transaction transaction = new Transaction(userId, type, amount, name);
+        financeService.addTransaction(transaction);
         return s;
     }
 
@@ -112,12 +116,20 @@ public class CommandProcessor {
      * @return отформатированная строка со списком
      */
     private String listTransactions(long userId, TransactionType type, String title) {
-        List<Transaction> list = financeService.getTransactions(userId, type);
+        List<Transaction> list;
+        try {
+            list = financeService.getTransaction(userId, type);
+        } catch (SQLException e) {
+            return "Ошибка при получении данных из базы данных.";
+        }
         if (list.isEmpty())
             return "Список пуст.";
         StringBuilder str = new StringBuilder(title).append("\n");
-        for (Transaction t : list) {
-            str.append("[ID: ").append(t.getId()).append("] ").append(t.toString()).append("\n");
+        for (int i = 0; i < list.size(); i++) {
+            Transaction t = list.get(i);
+            str.append("[ID: ").append(i + 1).append("] ")
+                    .append(t.getSum()).append(" - ")
+                    .append(t.getName()).append("\n");
         }
         return str.toString();
     }
@@ -139,7 +151,12 @@ public class CommandProcessor {
         } catch (Exception e) {
             return "Ошибка. ID должен быть числом.";
         }
-        boolean deleted = financeService.deleteTransaction(userId, id);
+        boolean deleted;
+        try {
+            deleted = financeService.deleteTransaction(userId, type, id);
+        } catch (SQLException e) {
+            return "Ошибка при получении данных из базы данных.";
+        }
         if (!deleted)
             return "Ошибка. Записи с таким ID не существует.";
         return "Запись успешно удалена.";
@@ -167,7 +184,12 @@ public class CommandProcessor {
             return "Ошибка. ID и сумма должны быть числами.";
         }
         String newName = String.join(" ", Arrays.copyOfRange(parts, 3, parts.length));
-        boolean updated = financeService.updateTransaction(userId, id, newAmount, newName);
+        boolean updated;
+        try {
+            updated = financeService.editTransaction(userId, type, id, newAmount, newName);
+        } catch (SQLException e) {
+            return "Ошибка при редактировании записи из базы данных.";
+        }
         if (!updated)
             return "Ошибка. Записи с таким номером не существует.";
         return "Запись успешно отредактирована!";
@@ -181,15 +203,26 @@ public class CommandProcessor {
      * @return отформатированная строка со статистикой
      */
     private String getSum(long userId, TransactionType type, String title) {
-        List<Transaction> list = financeService.getTransactions(userId, type);
-        double sum = financeService.getSum(userId, type);
+        List<Transaction> list;
+        try {
+            list = financeService.getTransaction(userId, type);
+        } catch (SQLException e) {
+            return "Ошибка при получении данных из базы данных.";
+        }
+        double sum;
+        try {
+            sum = financeService.getSum(userId, type);
+        } catch (SQLException e) {
+            return "Ошибка при подсчете суммы в базе данных.";
+        }
         StringBuilder str = new StringBuilder(title).append(sum).append("\n \n Последние 3 записи: \n");
         if (list.isEmpty())
             str.append("Записей нет.");
         else {
             int start = Math.max(0, list.size() - 3);
             for (int i = start; i < list.size(); i++) {
-                str.append(list.get(i).toString()).append("\n");
+                Transaction t = list.get(i);
+                str.append(t.getSum()).append(" - ").append(t.getName()).append("\n");
             }
         }
         return str.toString();

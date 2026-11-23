@@ -1,12 +1,13 @@
-package org.example.service; // Убедись, что пакет совпадает с твоей папкой
+package org.example.service;
+
+import org.example.model.Transaction;
+import org.example.model.TransactionType;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class FinanceService {
-
     private final String dbUrl;
 
     public FinanceService(String dbUrl) {
@@ -14,6 +15,11 @@ public class FinanceService {
     }
 
     public void initialize() {
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Драйвер SQLite не найден в зависимостях проекта", e);
+        }
         String sql = """
             CREATE TABLE IF NOT EXISTS transactions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,38 +39,17 @@ public class FinanceService {
 
     /**
      * Функция добавления траты в бд
-     * @param userId телеграм id пользователя
-     * @param amount размер траты
-     * @param name наименование траты
+     * @param transaction телеграм id пользователя
      * @throws SQLException
      */
-
-    public void addExpense(long userId, double amount, String name) throws SQLException {
-        String sql = "INSERT INTO transactions(user_id, type, amount, name) VALUES(?, 'expense', ?, ?)";
+    public void addTransaction(Transaction transaction) throws SQLException {
+        String sql = "INSERT INTO transactions(user_id, type, amount, name) VALUES(?, ?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setLong(1, userId);
-            pstmt.setDouble(2, amount);
-            pstmt.setString(3, name);
-            pstmt.executeUpdate();
-        }
-    }
-
-    /**
-     * Функция добавления дохода в бд
-     * @param userId телеграм id пользователя
-     * @param amount размер дохода
-     * @param name наименование дохода
-     * @throws SQLException
-     */
-
-    public void addIncome(long userId, double amount, String name) throws SQLException {
-        String sql = "INSERT INTO transactions(user_id, type, amount, name) VALUES(?, 'income', ?, ?)";
-        try (Connection conn = DriverManager.getConnection(dbUrl);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setLong(1, userId);
-            pstmt.setDouble(2, amount);
-            pstmt.setString(3, name);
+            pstmt.setLong(1, transaction.getId());
+            pstmt.setString(2, transaction.getType().name().toLowerCase());
+            pstmt.setDouble(3, transaction.getSum());
+            pstmt.setString(4, transaction.getName());
             pstmt.executeUpdate();
         }
     }
@@ -75,37 +60,21 @@ public class FinanceService {
      * @return
      * @throws SQLException
      */
-    public List<String> getExpenses(long userId) throws SQLException {
-        String sql = "SELECT amount, name FROM transactions WHERE user_id = ? AND type = 'expense' ORDER BY id ASC";
-        List<String> list = new ArrayList<>();
+    public List<Transaction> getTransaction(long userId, TransactionType type) throws SQLException {
+        String sql = "SELECT amount, name FROM transactions WHERE user_id = ? AND type = ? ORDER BY id ASC";
+        List<Transaction> list = new ArrayList<>();
         try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, userId);
+            pstmt.setString(2, type.name().toLowerCase());
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    list.add(rs.getDouble("amount") + " — " + rs.getString("name"));
-                }
-            }
-        }
-        return list;
-    }
-
-    /**
-     * Функция вывода списка доходов
-     * @param userId телеграм id пользователя
-     * @return
-     * @throws SQLException
-     */
-
-    public List<String> getIncomes(long userId) throws SQLException {
-        String sql = "SELECT amount, name FROM transactions WHERE user_id = ? AND type = 'income' ORDER BY id ASC";
-        List<String> list = new ArrayList<>();
-        try (Connection conn = DriverManager.getConnection(dbUrl);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setLong(1, userId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(rs.getDouble("amount") + " — " + rs.getString("name"));
+                    list.add(new Transaction(
+                            userId,
+                            type,
+                            rs.getDouble("amount"),
+                            rs.getString("name")
+                    ));
                 }
             }
         }
@@ -119,31 +88,22 @@ public class FinanceService {
      * @return
      * @throws SQLException
      */
-
-    public boolean deleteExpense(long userId, int index) throws SQLException {
-        String sql = "DELETE FROM transactions WHERE id = (SELECT id FROM transactions WHERE user_id = ? AND type = 'expense' ORDER BY id ASC LIMIT 1 OFFSET ?)";
+    public boolean deleteTransaction(long userId, TransactionType type, int index) throws SQLException {
+        if (index < 1)
+            return false;
+        String sql = """
+                DELETE FROM transactions 
+                WHERE id = (
+                    SELECT id FROM transactions 
+                    WHERE user_id = ? AND type = ?
+                    ORDER BY id ASC LIMIT 1 OFFSET ?
+                )
+                """;
         try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, userId);
-            pstmt.setInt(2, index - 1);
-            return pstmt.executeUpdate() > 0;
-        }
-    }
-
-    /**
-     * Функция удаления дохода по номеру
-     * @param userId телеграм id пользователя
-     * @param index номер дохода который нужно удалить
-     * @return
-     * @throws SQLException
-     */
-
-    public boolean deleteIncome(long userId, int index) throws SQLException {
-        String sql = "DELETE FROM transactions WHERE id = (SELECT id FROM transactions WHERE user_id = ? AND type = 'income' ORDER BY id ASC LIMIT 1 OFFSET ?)";
-        try (Connection conn = DriverManager.getConnection(dbUrl);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setLong(1, userId);
-            pstmt.setInt(2, index - 1);
+            pstmt.setString(2, type.name().toLowerCase());
+            pstmt.setInt(3, index - 1);
             return pstmt.executeUpdate() > 0;
         }
     }
@@ -157,35 +117,25 @@ public class FinanceService {
      * @return
      * @throws SQLException
      */
-    public boolean editExpense(long userId, int index, double newAmount, String newName) throws SQLException {
-        String sql = "UPDATE transactions SET amount = ?, name = ? WHERE id = (SELECT id FROM transactions WHERE user_id = ? AND type = 'expense' ORDER BY id ASC LIMIT 1 OFFSET ?)";
+    public boolean editTransaction(long userId, TransactionType type, int index, double newAmount, String newName) throws SQLException {
+        if (index < 1)
+            return false;
+        String sql = """
+                UPDATE transactions 
+                SET amount = ?, name = ? 
+                WHERE id = (
+                    SELECT id FROM transactions 
+                    WHERE user_id = ? AND type = ?
+                    ORDER BY id ASC LIMIT 1 OFFSET ?
+                )
+                """;
         try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setDouble(1, newAmount);
             pstmt.setString(2, newName);
             pstmt.setLong(3, userId);
-            pstmt.setInt(4, index - 1);
-            return pstmt.executeUpdate() > 0;
-        }
-    }
-
-    /**
-     * Функция изменения дохода
-     * @param userId телеграм id пользователя
-     * @param index номер изменяемого дохода
-     * @param newAmount новая сумма дохода
-     * @param newName новое наименование дохода
-     * @return
-     * @throws SQLException
-     */
-    public boolean editIncome(long userId, int index, double newAmount, String newName) throws SQLException {
-        String sql = "UPDATE transactions SET amount = ?, name = ? WHERE id = (SELECT id FROM transactions WHERE user_id = ? AND type = 'income' ORDER BY id ASC LIMIT 1 OFFSET ?)";
-        try (Connection conn = DriverManager.getConnection(dbUrl);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setDouble(1, newAmount);
-            pstmt.setString(2, newName);
-            pstmt.setLong(3, userId);
-            pstmt.setInt(4, index - 1);
+            pstmt.setString(4, type.name().toLowerCase());
+            pstmt.setInt(5, index - 1);
             return pstmt.executeUpdate() > 0;
         }
     }
@@ -196,28 +146,12 @@ public class FinanceService {
      * @return
      * @throws SQLException
      */
-    public double getSumExpenses(long userId) throws SQLException {
-        String sql = "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'expense'";
+    public double getSum(long userId, TransactionType type) throws SQLException {
+        String sql = "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = ?";
         try (Connection conn = DriverManager.getConnection(dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, userId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                return rs.next() ? rs.getDouble(1) : 0.0;
-            }
-        }
-    }
-
-    /**
-     * Функция вывода суммы всех доходов пользователя
-     * @param userId телеграм id пользователя
-     * @return
-     * @throws SQLException
-     */
-    public double getSumIncomes(long userId) throws SQLException {
-        String sql = "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'income'";
-        try (Connection conn = DriverManager.getConnection(dbUrl);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setLong(1, userId);
+            pstmt.setString(2, type.name().toLowerCase());
             try (ResultSet rs = pstmt.executeQuery()) {
                 return rs.next() ? rs.getDouble(1) : 0.0;
             }

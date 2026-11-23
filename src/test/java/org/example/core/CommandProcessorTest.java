@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+
 /**
  * Тесты для проверки корректности обработки команд бота.
  */
@@ -16,7 +18,12 @@ public class CommandProcessorTest {
      */
     @BeforeEach
     void setUp() {
-        FinanceService service = new FinanceService();
+        File dbFile = new File("test_command_processor.db");
+        if (dbFile.exists()) {
+            dbFile.delete();
+        }
+        FinanceService service = new FinanceService("jdbc:sqlite:test_command_processor.db");
+        service.initialize();
         processor = new CommandProcessor(service);
     }
 
