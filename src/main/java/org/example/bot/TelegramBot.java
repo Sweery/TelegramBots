@@ -3,9 +3,6 @@ package org.example.bot;
 import org.example.core.CommandProcessor;
 import org.example.service.FinanceService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -16,7 +13,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
  */
 
 public class TelegramBot extends TelegramLongPollingBot {
-    private final Logger log = LoggerFactory.getLogger(TelegramBot.class);
 
     private final CommandProcessor commandProcessor;
 
@@ -47,7 +43,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             long chatId = update.getMessage().getChatId();
             String userName = update.getMessage().getFrom().getUserName();
 
-            log.info("Входящее сообщение от chatId={}, user={}: {}", chatId, userName, message);
+            System.out.println("Входящее сообщение от chatId=" + chatId + "user="
+                    + userName + ":" + message);
 
             String answer = commandProcessor.process(chatId, message);
 
@@ -57,9 +54,10 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             try {
                 execute(sendMessage);
-                log.debug("Ответ отправлен chatId={}", chatId);
+                System.out.println("Ответ отправлен chatId=" + chatId);
             } catch (TelegramApiException e) {
-                log.error("Не удалось отправить сообщение chatId={}: {}", chatId, e.getMessage(), e);
+                System.out.println("Не удалось отправить сообщение chatId=" + chatId +
+                        ":" + e.getMessage());
             }
         }
     }

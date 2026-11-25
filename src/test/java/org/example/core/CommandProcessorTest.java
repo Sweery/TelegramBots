@@ -37,11 +37,29 @@ public class CommandProcessorTest {
     }
 
     /**
+     * Проверяет успешное добавление дохода.
+     */
+    @Test
+    void testAddIncome() {
+        String result = processor.process(1L, "/add_income 100000 зарплата");
+        Assertions.assertEquals("Доход успешно добавлен!", result);
+    }
+
+    /**
      * Проверяет обработку ошибки, если сумма не является числом.
      */
     @Test
     void testAddExpenseBadSum() {
         String result = processor.process(1L, "/add_expense кофе 300");
+        Assertions.assertEquals("Ошибка. Сумма должна быть числом.", result);
+    }
+
+    /**
+     * Проверяет обработку ошибки, если сумма не является числом.
+     */
+    @Test
+    void testAddIncomeBadSum() {
+        String result = processor.process(1L, "/add_income зарплата зарплата");
         Assertions.assertEquals("Ошибка. Сумма должна быть числом.", result);
     }
 
@@ -55,11 +73,29 @@ public class CommandProcessorTest {
     }
 
     /**
+     * Проверяет обработку ошибки, если сумма отрицательная.
+     */
+    @Test
+    void testAddIncomeMinusSum() {
+        String result = processor.process(1L, "/add_income -12000 кредит");
+        Assertions.assertEquals("Ошибка. Сумма должна быть больше нуля.", result);
+    }
+
+    /**
      * Проверяет, что при пустом списке выводится сообщение об отсутствии записей.
      */
     @Test
-    void testListEmpty() {
+    void testExpenseListEmpty() {
         String result = processor.process(1L, "/list_expenses");
+        Assertions.assertEquals("Список пуст.", result);
+    }
+
+    /**
+     * Проверяет, что при пустом списке выводится сообщение об отсутствии записей.
+     */
+    @Test
+    void testIncomeListEmpty() {
+        String result = processor.process(1L, "/list_incomes");
         Assertions.assertEquals("Список пуст.", result);
     }
 
@@ -67,8 +103,72 @@ public class CommandProcessorTest {
      * Проверяет обработку ошибки при удалении записи с несуществующим ID.
      */
     @Test
-    void testDeleteBadId() {
+    void testExpenseDeleteBadId() {
         String result = processor.process(1L, "/delete_expense 999");
         Assertions.assertEquals("Ошибка. Записи с таким ID не существует.", result);
+    }
+
+    /**
+     * Проверяет обработку ошибки при удалении записи с несуществующим ID.
+     */
+    @Test
+    void testIncomeDeleteBadId() {
+        String result = processor.process(1L, "/delete_income 999");
+        Assertions.assertEquals("Ошибка. Записи с таким ID не существует.", result);
+    }
+
+    /**
+     * Проверяет обработку ошибки при удалении записи траты, если ID не является числом.
+     */
+    @Test
+    void testExpenseDeleteNoNumberId() {
+        String result = processor.process(1L, "/delete_expense abc");
+        Assertions.assertEquals("Ошибка. ID должен быть числом.", result);
+    }
+
+    /**
+     * Проверяет обработку ошибки при удалении записи дохода, если ID не является числом.
+     */
+    @Test
+    void testIncomeDeleteNoNumberId() {
+        String result = processor.process(1L, "/delete_income abc");
+        Assertions.assertEquals("Ошибка. ID должен быть числом.", result);
+    }
+
+    /**
+     * Проверяет обработку ошибки при редактировании записи траты с несуществующим номером.
+     */
+    @Test
+    void testExpenseEditBadId() {
+        String result = processor.process(1L, "/edit_expense 999 999 qwerty");
+        Assertions.assertEquals("Ошибка. Записи с таким номером не существует.", result);
+    }
+
+
+    /**
+     * Проверяет обработку ошибки при редактировании записи дохода с несуществующим номером.
+     */
+    @Test
+    void testIncomeEditBadId() {
+        String result = processor.process(1L, "/edit_income 999 999 qwerty");
+        Assertions.assertEquals("Ошибка. Записи с таким номером не существует.", result);
+    }
+
+    /**
+     * Проверяет обработку ошибки при редактировании записи траты с отрицательным ID.
+     */
+    @Test
+    void testExpenseEditMinusId() {
+        String result = processor.process(1L, "/edit_expense 1 -999 qwerty");
+        Assertions.assertEquals("Ошибка. Сумма должна быть больше нуля.", result);
+    }
+
+    /**
+     * Проверяет обработку ошибки при редактировании записи дохода с отрицательным ID.
+     */
+    @Test
+    void testIncomeEditMinusId() {
+        String result = processor.process(1L, "/edit_income 1 -999 qwerty");
+        Assertions.assertEquals("Ошибка. Сумма должна быть больше нуля.", result);
     }
 }

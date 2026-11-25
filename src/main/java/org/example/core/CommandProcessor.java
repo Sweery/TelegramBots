@@ -92,7 +92,7 @@ public class CommandProcessor {
      */
     private String addTransaction(long userId, String[] parts, TransactionType type, String s) throws SQLException {
         if (parts.length < 3)
-            return "Формат: /" + (type == TransactionType.EXPENSE ? "/add_expense" : "/add_income") +
+            return "Формат: " + (type == TransactionType.EXPENSE ? "/add_expense" : "/add_income") +
                     " <сумма> <название> ";
         double amount;
         try {
@@ -143,7 +143,7 @@ public class CommandProcessor {
      */
     private String deleteTransaction(long userId, String[] parts, TransactionType type) {
         if (parts.length < 2)
-            return "Формат: /" + (type == TransactionType.EXPENSE ? "/delete_expense" : "/delete_income") +
+            return "Формат: " + (type == TransactionType.EXPENSE ? "/delete_expense" : "/delete_income") +
                     " <номер> ";
         int id;
         try {
@@ -171,7 +171,7 @@ public class CommandProcessor {
      */
     private String editTransaction(long userId, String[] parts, TransactionType type) {
         if (parts.length < 4)
-            return "Формат: /" + (type == TransactionType.EXPENSE ? "/edit_expense" : "/edit_income") +
+            return "Формат: " + (type == TransactionType.EXPENSE ? "/edit_expense" : "/edit_income") +
                     " <номер> <новая сумма> <новое название> ";
         int id;
         double newAmount;

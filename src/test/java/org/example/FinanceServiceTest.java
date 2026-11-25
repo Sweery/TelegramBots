@@ -11,11 +11,23 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
 
+/**
+ * Тесты для {@link FinanceService} — сервиса учёта доходов и расходов Telegram-бота.
+ */
 class FinanceServiceTest {
 
     private FinanceService service;
+
+    /**
+     * Telegram ID тестового пользователя, от имени которого выполняются операции.
+     */
     private final long TEST_USER_ID = 999L;
 
+    /**
+     * Подготовка окружения перед каждым тестом: удаляет файл тестовой БД
+     * (если он есть) и создаёт новый экземпляр {@link FinanceService}
+     * с вызовом {@link FinanceService#initialize()}.
+     */
     @BeforeEach
     void setUp() {
         File dbFile = new File("test_finance.db");
