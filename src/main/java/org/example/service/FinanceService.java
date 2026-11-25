@@ -7,13 +7,24 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Сервис учёта доходов и расходов пользователя для Telegram-бота. Обеспечивает хранение и обработку финансовых записей (транзакций) в базе данных
+ * SQLite. Каждая запись привязана к пользователю по его Telegram ID и имеет тип (доход или расход).
+ */
 public class FinanceService {
+
+    /**
+     * JDBC-URL для подключения к базе данных SQLite.
+     */
     private final String dbUrl;
 
     public FinanceService(String dbUrl) {
         this.dbUrl = dbUrl;
     }
 
+    /**
+     * Инициализирует базу данных: загружает драйвер SQLite и создаёт таблицу.
+     */
     public void initialize() {
         try {
             Class.forName("org.sqlite.JDBC");
